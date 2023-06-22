@@ -1,0 +1,10 @@
+{
+	"id": "obsidian-aitex",
+	"name": "AItex",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "LaTex input with the help of AI.",
+	"author": "JFR",
+	"authorUrl": "https://github.com/shuxueshuxue",
+	"isDesktopOnly": false
+}

@@ -1,0 +1,314 @@
+import { Plugin, Editor, TFile, MarkdownEditView, MarkdownView } from "obsidian";
+import { SettingTab } from "./settings";
+import { Prec } from "@codemirror/state";
+import { EditorView ,keymap } from '@codemirror/view';
+import { Configuration, OpenAIApi } from "openai";
+import { Readable } from "stream";
+import * as https from 'https';
+import { URL } from 'url';
+
+interface PluginSettings {
+  endpoint: string;
+  apiKey: string;
+}
+
+interface MyLine {
+  lineNumber: number;
+  text: string;
+}
+
+const DEFAULT_SETTINGS: Partial<PluginSettings> = {
+  endpoint: "https://api.catgpt.cc/ai/v1/chat/completions",
+  apiKey: "cat-iBMbqPPQTGGageaQ6q0U5g6c0VQw8QWCIIR85CCkDqK2vSdD",
+};
+
+export default class aitex extends Plugin {
+  settings: PluginSettings;
+
+  async onload() {
+    await this.loadSettings();
+    this.addSettingTab(new SettingTab(this.app, this));
+	
+    this.registerEditorExtension(Prec.highest(keymap.of([
+			{
+				key: "Enter",
+				run: (view: EditorView): boolean => {
+					const success = this.handleEnter(view);
+					return success;
+				}
+			}
+		])));
+  }
+
+  async loadSettings() {
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  }
+
+  async saveSettings() {
+    await this.saveData(this.settings);
+  }
+
+// here comes the main function
+processing_queue = Array<String>()
+
+handleEnter = (view: EditorView) => {
+  let state = view.state;
+  let doc = state.doc
+  const s = view.state.selection;
+  if (s.ranges.length > 1) return false;
+  const pos = s.main.to;
+  let line = doc.lineAt(pos)
+  
+  if (line.text.endsWith("\\\\")){
+    this.process_line({lineNumber: line.number, text: line.text})
+  }
+  
+  return false
+}
+
+getActiveView() {
+  const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+  if (activeView !== null) {
+    return activeView;
+  } else {
+    // new Notice("The file type should be Markdown!");
+    return null;
+  }
+}
+
+async process_line(line: MyLine){
+  let activeView = this.getActiveView();
+  if (activeView !== null){
+    const editor = activeView.editor;
+
+    let power = 2
+    if (line.text.endsWith("\\\\\\")){
+      power = 3
+    }
+    line.text = line.text.slice(0, -power)
+
+    editor.setLine(line.lineNumber - 1, line.text + " 🪄...")
+
+    const res = await this.get_formatted_latex(line.text, power, this.settings.endpoint, this.settings.apiKey)
+    if (res){
+      editor.setLine(line.lineNumber - 1, res)
+    }
+  }
+}
+
+async get_formatted_latex(origin_text: string, power=2, url: string, api_key: string){
+  let text = ""
+if (power == 2){
+  text = `For the text below, correct spelling errors and format formulas as per MathStackExchange conventions, using $:
+
+${origin_text}
+
+(Note: only adjust formatting, do not translate. If no edits needed, return the text as is)`;
+}
+else{
+  text = `For the text below, correct spelling errors and format formulas as per MathStackExchange conventions, using $ or $$:
+
+${origin_text}
+  
+(Note: only adjust formatting, do not translate. If see any text describes a mathematical entity(for example, a matrix), replace it with the exact LaTeX formula.)`
+}
+  return await generateCompletion(text, url, api_key);
+}
+  
+
+}
+
+async function generateCompletion(prompt: string, url: string, api_key: string) {
+  // return await streamChatCompletion({message: prompt})
+  console.log("generating completion...")
+  const chunks = await httpStream({message: prompt}, url, api_key);
+  console.log(chunks)
+  const result = extractAndConcatenateContent(chunks as string)
+  console.log(result)
+  return result
+}
+
+
+const OPENAI_API_KEY = 'cat-iBMbqPPQTGGageaQ6q0U5g6c0VQw8QWCIIR85CCkDqK2vSdD'; // Replace with your actual OpenAI API key
+
+
+
+function parseUrl(myUrl: string): { hostname: string; path: string } {
+  const parsedUrl = new URL(myUrl);
+  return {
+    hostname: parsedUrl.hostname,
+    path: parsedUrl.pathname
+  };
+}
+
+async function httpStream({ message }: { message: string }, url: string, api_key: string){
+  let parsed = parseUrl(url)
+
+  const data = JSON.stringify({
+          model: "gpt-3.5-turbo",
+          stream: true,
+          messages: [
+              {
+                  content: message,
+                  role: "user"
+              }
+          ],
+          max_tokens: 500,
+          temperature: 0.5,
+      });
+
+  const options = {
+      hostname: 'api.catgpt.cc',
+      path: '/ai/v1/chat/completions',
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+        },
+  };
+
+  const reqPromise = new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
+      let chunks: Buffer[] = [];
+      res.on('data', (chunk) => {
+        chunks.push(chunk);
+      });
+  
+      res.on('end', () => {
+        resolve(Buffer.concat(chunks).toString());
+      });
+  
+      res.on('error', (err) => {
+        reject(err);
+      });
+    });
+    req.write(data);
+    req.end();
+  });
+  
+  let result = await reqPromise
+  return result
+}
+
+function extractAndConcatenateContent(dataString: string): string {
+  let concatenatedContent = '';
+
+  const dataStrings = dataString.split('\n');
+
+  for (const dataStr of dataStrings) {
+    if (dataStr.trim() !== '' && dataStr.startsWith('data:')) {
+      const jsonStr = dataStr.slice(5); // remove 'data:' prefix
+      const dataObject = JSON.parse(jsonStr);
+      const content = dataObject.choices[0]?.delta?.content || '';
+      concatenatedContent += content;
+    }
+  }
+
+  return concatenatedContent;
+}
+
+
+function extractContentFromChunks(chunks: string): string {
+  const contentArray = chunks.split('\n') 
+    .map(line => {
+      if (line.startsWith('data: ')) {
+        return line.slice('data: '.length);
+      }
+      return line;
+    })
+    .map(jsonStr => {
+      try {
+        return JSON.parse(jsonStr);
+      } catch (error) {
+        console.error('Error parsing JSON string:', jsonStr);
+        return null;
+      }
+    })
+    .map(jsonObj => jsonObj?.choices[0]?.delta?.content)
+    .filter(Boolean);
+
+  const content = contentArray.join('');
+  return content;
+}
+
+
+async function processStream(readable: Readable) {
+  let completeText = '';
+  let leftover = ''; // this is to store incomplete JSON object strings
+  return new Promise((resolve, reject) => {
+    readable.on('data', (chunk) => {
+      // convert the chunk to string and prepend any leftover from the last chunk
+      const chunkStr = (leftover + chunk.toString()).trim();
+      leftover = ''; // clear the leftover
+
+      // split the string by newline, each line should be a complete JSON object string
+      const lines = chunkStr.split('\n');
+
+      for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
+
+        // check if "data: " is present before replacing
+        if (line.startsWith('data: ')) {
+          line = line.replace('data: ', '');
+        }
+
+        try {
+          // parse JSON
+          const jsonChunk = JSON.parse(line);
+
+          // extract and append the message content
+          const messageContent = jsonChunk.choices[0]?.delta?.content;
+          if (messageContent) {
+            completeText += messageContent;
+          }
+        } catch (error) {
+          // if parsing fails, it could be due to the line being an incomplete JSON object string
+          // so we add it to the leftover to be prepended to the next chunk
+          leftover += line;
+        }
+      }
+    });
+
+    readable.on('end', () => {
+      resolve(completeText);
+    });
+  })
+}
+
+async function streamChatCompletion({ message }: { message: string }) {
+  const configuration = new Configuration({
+    apiKey: OPENAI_API_KEY,
+  });
+  const openai = new OpenAIApi(configuration);
+
+  let completeText = ""
+
+  const response = await openai.createChatCompletion(
+      {
+          model: "gpt-3.5-turbo",
+          stream: true,
+          messages: [
+              {
+                  content: message,
+                  role: "user"
+              }
+          ],
+          max_tokens: 512,
+          temperature: 0.5,
+      },
+      { responseType: "stream" }
+  );
+    
+  let content = response.data
+  if (content){
+    const readable = Readable.from(content);
+    try {
+      const result = await processStream(readable);
+      return result; // result is the completeText
+    } catch (err) {
+      console.error(err); // handle any errors
+      // handle the error based on your needs, maybe re-throw it or return a default value
+    }
+  }
+}
