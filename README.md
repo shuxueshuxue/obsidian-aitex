@@ -1,18 +1,39 @@
-# Note Recall
+Greetings, Mathemagicians! We present to you AItex, a trusty sidekick on your journey through the maze of mathematical formulae in the land of Obsidian. We've been chatting with the wizards at OpenAI, who gave us a nifty tool called the OpenAI API.
 
-Note Recall is an [Obsidian](https://obsidian.md/) plugin that helps you memorize notes by generating a game-like challenge for you to complete.
+Features
+--------
 
-## How to Use
+Just like the best magical artifacts, AItex has some cool tricks up its sleeve:
 
-1.  Open the note you want to memorize in Obsidian.
-2.  From the command palette, execute "Start Game". This will generate a challenge file.
-3.  Fill in the blanks between the flags in the challenge file with your answers.
+* A spell of Binding: AItex is tightly bound with Obsidian, ready to aid you at a moment's notice.
+* Whispering to Spirits: The core of AItex's magic is the OpenAI API, a mystical entity we converse with to understand your numerical notations.
 
-![](images/example1.png)
+Installation
+------------
 
-4.  From the command palette, execute "Submit". Your score will be displayed at the top of the challenge file, along with the correct answers next to your answers.
+Before you summon AItex, ensure your Obsidian grimoire is of v1.3.0 or a newer edition.
 
-![](images/example2.png)
+Now, hold onto your hats because AItex isn't just sitting around in the Obsidian market. You'll need to conjure it up manually, and don't forget to obtain an OpenAI API key – it's our magic phrase to call upon the OpenAI spirits.
 
+Usage
+-----
 
-That's it! Use Note Recall to improve your memory and retain more of the information in your notes.
+Here's how to wield AItex's magic:
+
+* With a swift double backslash (\\): Invoke AItex to cast a spell that restructures the math puzzle on your current line.
+* With a powerful triple backslash (\\\): AItex uses a more potent charm, useful for grand challenges like the daunting 3x3 matrix.
+
+Contributing
+------------
+
+Fellow wizards and witches, we welcome your magical insights! If you have enhancements or improvements, please clone our spellbook (i.e., fork the repository), make your mystical modifications, and submit a scroll with your changes (pull request).
+
+Contact
+-------
+
+If you need a magical consultation or have ideas to share, send us an owl! We're always eager to hear from fellow enchanters.
+
+Acknowledgments
+---------------
+
+We tip our hats to the arcane masters at OpenAI. Without their mystic API, AItex would be just another ordinary wand.
