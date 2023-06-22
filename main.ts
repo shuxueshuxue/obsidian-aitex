@@ -83,6 +83,10 @@ async process_line(line: MyLine){
     }
     line.text = line.text.slice(0, -power)
 
+    if (!line.text.trim()){
+      return
+    }
+
     editor.setLine(line.lineNumber - 1, line.text + "🪄")
 
     const res = await this.get_formatted_latex(line.text, power, this.settings.endpoint, this.settings.apiKey)
