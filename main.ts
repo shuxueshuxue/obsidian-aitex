@@ -100,17 +100,17 @@ async get_formatted_latex(origin_text: string, power=2, url: string, api_key: st
   let text = ""
 if (power == 2){
   text = `For the text below, correct spelling errors and format formulas as per MathStackExchange conventions, using $:
-
+"
 ${origin_text}
-
-(Note: only adjust formatting, do not translate. If no edits needed, return the text as is)`;
+"
+(NOTE: only adjust formatting, do not translate. If no edits needed, return the text as is)`;
 }
 else{
-  text = `For the text below, correct spelling errors and format formulas as per MathStackExchange conventions, using $ or $$:
-
+  text = `For the text below, find mathematics object description(for example, "a 3x3 matrix") and replace it to its exact LaTex form. Use $(small formulas) or $$(large formulas) to wrap them:
+"
 ${origin_text}
-  
-(Note: only adjust formatting, do not translate. If see any text describes a mathematical entity(for example, a matrix), replace it with the exact LaTeX formula.)`
+" 
+(NOTE: Do not translate language. Reply only the replaced text)`
 }
   return await generateCompletion(text, url, api_key);
 }
