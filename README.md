@@ -20,8 +20,8 @@ Usage
 
 Here's how to wield AItex's magic:
 
-* With a swift double backslash (\\): Invoke AItex to cast a spell that restructures the math puzzle on your current line.
-* With a powerful triple backslash (\\\): AItex uses a more potent charm, useful for grand challenges like the daunting 3x3 matrix.
+* With a swift double backslash (\\\\) then press enter: Invoke AItex to cast a spell that restructures the math puzzle on your current line.
+* With a powerful triple backslash (\\\\\\) then press enter: AItex uses a more potent charm, useful for grand challenges like the daunting 3x3 matrix.
 
 Contributing
 ------------
