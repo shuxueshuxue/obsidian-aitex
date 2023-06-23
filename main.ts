@@ -82,6 +82,9 @@ async process_line(line: MyLine){
     if (line.text.endsWith("\\\\\\")){
       power = 3
     }
+    if (line.text.endsWith("\\\\\\\\")){
+      power = 4
+    }
     line.text = line.text.slice(0, -power)
 
     if (!line.text.trim()){
@@ -100,13 +103,18 @@ async process_line(line: MyLine){
 async get_formatted_latex(origin_text: string, power=2, url: string, api_key: string){
   let text = generate_promt(origin_text, power)
   console.log(text)
-  return await generateCompletion(text, url, api_key);
+  console.log("GPT-4 used.")
+  let model = "gpt-3.5-turbo"
+  if (power>=4){
+    model = "gpt-4"
+  }
+  return await generateCompletion(text, url, api_key, model);
 }
 }
 
-async function generateCompletion(prompt: string, url: string, api_key: string) {
+async function generateCompletion(prompt: string, url: string, api_key: string, model: string) {
   // console.log("generating completion...")
-  const chunks = await httpStream({message: prompt}, url, api_key);
+  const chunks = await httpStream({message: prompt}, url, api_key, model);
   // console.log(chunks)
   const result = extractAndConcatenateContent(chunks as string)
   // console.log(result)
@@ -121,11 +129,11 @@ function parseUrl(myUrl: string): { hostname: string; path: string } {
   };
 }
 
-async function httpStream({ message }: { message: string }, url: string, api_key: string){
+async function httpStream({ message }: { message: string }, url: string, api_key: string, model: string){
   let parsed = parseUrl(url)
 
   const data = JSON.stringify({
-          model: "gpt-3.5-turbo",
+          model: model,
           stream: true,
           messages: [
               {

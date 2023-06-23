@@ -42,7 +42,7 @@ ${origin_text}
         }
     }
     
-    if (power == 3){
+    if (power >= 3){
         if (language == "en"){
             prompt = English_large
         }
