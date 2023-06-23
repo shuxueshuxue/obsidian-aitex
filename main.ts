@@ -103,10 +103,10 @@ async process_line(line: MyLine){
 async get_formatted_latex(origin_text: string, power=2, url: string, api_key: string){
   let text = generate_promt(origin_text, power)
   console.log(text)
-  console.log("GPT-4 used.")
   let model = "gpt-3.5-turbo"
   if (power>=4){
     model = "gpt-4"
+    console.log("GPT-4 used.")
   }
   return await generateCompletion(text, url, api_key, model);
 }
