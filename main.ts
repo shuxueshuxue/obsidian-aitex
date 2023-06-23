@@ -4,6 +4,7 @@ import { Prec } from "@codemirror/state";
 import { EditorView ,keymap } from '@codemirror/view';
 import * as https from 'https';
 import { URL } from 'url';
+import { generate_promt } from "prompt";
 
 interface PluginSettings {
   endpoint: string;
@@ -97,21 +98,8 @@ async process_line(line: MyLine){
 }
 
 async get_formatted_latex(origin_text: string, power=2, url: string, api_key: string){
-  let text = ""
-if (power == 2){
-  text = `For the text below, correct spelling errors and format formulas as per MathStackExchange conventions, using $:
-"
-${origin_text}
-"
-(NOTE: only adjust formatting, do not translate. If no edits needed, return the text as is)`;
-}
-else{
-  text = `For the text below, find mathematics object description(for example, "a 3x3 matrix") and replace it to its exact LaTex form. Use $(small formulas) or $$(large formulas) to wrap them:
-"
-${origin_text}
-" 
-(NOTE: Do not translate language. Reply only the replaced text)`
-}
+  let text = generate_promt(origin_text, power)
+  console.log(text)
   return await generateCompletion(text, url, api_key);
 }
 }
