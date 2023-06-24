@@ -18,10 +18,11 @@ Now, hold onto your hats because AItex isn't just sitting around in the Obsidian
 Usage
 -----
 
-Here's how to wield AItex's magic:
+Harness the power of AItex's spellbinding features! Note, each magical command only applies to the line where your caret currently resides. Now, let's conjure up some magic:
 
 * With a swift double backslash (\\\\) then press enter: Invoke AItex to cast a spell that restructures the math puzzle on your current line.
 * With a powerful triple backslash (\\\\\\) then press enter: AItex uses a more potent charm, useful for grand challenges like the daunting 3x3 matrix.
+* With a commanding quadruple backslash (\\\\\\\\) then press enter: AItex summons the wisdom of GPT-4, a powerful force ready to breathe life into your text and sculpt even the most elaborate mathematical marvels into coherent forms.
 
 Contributing
 ------------
