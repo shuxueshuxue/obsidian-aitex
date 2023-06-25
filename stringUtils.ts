@@ -3,6 +3,22 @@ export function hasChineseCharacters(input: string): boolean {
     return pattern.test(input);
 }
 
+function countChineseChars(text: string): number {
+    let count = 0;
+    const chinesePattern = new RegExp("[\u4e00-\u9fff]"); // Unicode range for Chinese characters
+    for (const char of text) {
+        if (chinesePattern.test(char)) {
+            count++;
+        }
+    }
+    return count;
+}
+
+export function tokenEstimate(text: string): number {
+    const numberOfChineseChars = countChineseChars(text);
+    return (text.length - numberOfChineseChars) * 0.3 + numberOfChineseChars * 1;
+}
+
 export function addDisplayStyle(input: string): string {
     // Matches formulas wrapped by $$, ``, or $...$
     const ignoreRegex = /\$\$.*?\$\$|`.*?`|\$(?!\$).*?\$(?!\$)/g;

@@ -5,7 +5,7 @@ import { EditorView ,keymap } from '@codemirror/view';
 import * as https from 'https';
 import { URL } from 'url';
 import { generate_promt } from "prompt";
-import { addDisplayStyle, powerToEmoji } from "stringUtils";
+import { addDisplayStyle, powerToEmoji, tokenEstimate } from "stringUtils";
 
 interface PluginSettings {
     endpoint: string;
@@ -100,10 +100,11 @@ async process_line(line: MyLine, doc: codemirrorText){
             let lineNumber = line.lineNumber - 1;  // Start from the line above
             let accumulatedText = "";
             let totalLines = 0;
-            let totalCharacters = 0;
+            let totalToken = 0;
+            let max_token = 1000
         
             // Keep adding previous lines until conditions are met
-            while (lineNumber > 0 && totalLines < 10 && totalCharacters <= 1000) {
+            while (lineNumber > 0 && totalLines < 10 && totalToken <= max_token) {
                 let lastLine = doc.line(lineNumber);
         
                 if (lastLine.text.trim() === "") {
@@ -112,9 +113,8 @@ async process_line(line: MyLine, doc: codemirrorText){
         
                 // Add this line at the beginning of the accumulated text
                 accumulatedText = lastLine.text + "\n" + accumulatedText;
-                totalCharacters += lastLine.text.length;
+                totalToken += tokenEstimate(lastLine.text);
                 totalLines++;
-        
                 lineNumber--;
             }
             accumulatedText = accumulatedText.trim()
