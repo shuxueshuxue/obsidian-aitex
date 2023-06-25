@@ -23,6 +23,7 @@ Harness the power of AItex's spellbinding features! Note, each magical command o
 * With a swift double backslash (\\\\) then press enter: Invoke AItex to cast a spell that restructures the math puzzle on your current line.
 * With a powerful triple backslash (\\\\\\) then press enter: AItex uses a more potent charm, useful for grand challenges like the daunting 3x3 matrix.
 * With a commanding quadruple backslash (\\\\\\\\) then press enter: AItex summons the wisdom of GPT-4, a powerful force ready to breathe life into your text and sculpt even the most elaborate mathematical marvels into coherent forms.
+* When your caret's current line is empty, AItex will not rest. Instead, it will journey upwards, line by line, gathering up to 10 consecutive non-empty lines (or until it encounters an empty line as a signal to stop) to weave its magic on. This gathered block of lines will then be considered as a whole and formatted in a single swoop. This feature allows AItex to understand and format more complex mathematical constructions that span multiple lines.
 
 Contributing
 ------------
