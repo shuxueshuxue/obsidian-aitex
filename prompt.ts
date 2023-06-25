@@ -11,7 +11,7 @@ let English_passive = `For the text below, correct spelling errors and format fo
 "
 ${origin_text}
 "
-(NOTE: If no edits needed, return the text as is)`
+(NOTE: You should return original text if no edits needed)`
 
 let English_aggressive = `For the text below, find mathematics objects' text description(for example, "a 3x3 matrix") and replace them to their exact LaTex formulas. Wrap them by $ or $$ as per MathStackExchange conventions:
 "

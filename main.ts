@@ -1,11 +1,11 @@
 import { Plugin, MarkdownView } from "obsidian";
 import { SettingTab } from "./settings";
-import { Prec } from "@codemirror/state";
+import { Prec, Text as codemirrorText } from "@codemirror/state";
 import { EditorView ,keymap } from '@codemirror/view';
 import * as https from 'https';
 import { URL } from 'url';
 import { generate_promt } from "prompt";
-import { addDisplayStyle } from "stringUtils";
+import { addDisplayStyle, powerToEmoji } from "stringUtils";
 
 interface PluginSettings {
     endpoint: string;
@@ -58,7 +58,7 @@ handleEnter = (view: EditorView) => {
     let line = doc.lineAt(pos)
 
     if (line.text.endsWith("\\\\")){
-        this.process_line({lineNumber: line.number, text: line.text})
+        this.process_line({lineNumber: line.number, text: line.text}, doc)
     }
 
     return false
@@ -74,7 +74,7 @@ getActiveView() {
     }
 }
 
-async process_line(line: MyLine){
+async process_line(line: MyLine, doc: codemirrorText){
     let activeView = this.getActiveView();
     if (activeView !== null){
         const editor = activeView.editor;
@@ -88,15 +88,44 @@ async process_line(line: MyLine){
         }
         line.text = line.text.slice(0, -power)
 
-        if (!line.text.trim()){
-            return
+        if (line.text.trim()){
+            editor.setLine(line.lineNumber - 1, line.text + powerToEmoji(power))
+
+            const res = await this.get_formatted_latex(line.text, power, this.settings.endpoint, this.settings.apiKey)
+            if (res){
+                editor.setLine(line.lineNumber - 1, res)
+            }
         }
-
-        editor.setLine(line.lineNumber - 1, line.text + "🪄")
-
-        const res = await this.get_formatted_latex(line.text, power, this.settings.endpoint, this.settings.apiKey)
-        if (res){
-            editor.setLine(line.lineNumber - 1, res)
+        else {
+            let lineNumber = line.lineNumber - 1;  // Start from the line above
+            let accumulatedText = "";
+            let totalLines = 0;
+            let totalCharacters = 0;
+        
+            // Keep adding previous lines until conditions are met
+            while (lineNumber > 0 && totalLines < 10 && totalCharacters <= 1000) {
+                let lastLine = doc.line(lineNumber);
+        
+                if (lastLine.text.trim() === "") {
+                    break;  // Break if an empty line is found
+                }
+        
+                // Add this line at the beginning of the accumulated text
+                accumulatedText = lastLine.text + "\n" + accumulatedText;
+                totalCharacters += lastLine.text.length;
+                totalLines++;
+        
+                lineNumber--;
+            }
+            accumulatedText = accumulatedText.trim()
+        
+            if (accumulatedText.trim() !== "") {  // If the accumulated text is not empty
+                editor.setLine(line.lineNumber - 1, line.text + powerToEmoji(power))
+                const res = await this.get_formatted_latex(accumulatedText, power, this.settings.endpoint, this.settings.apiKey)
+                // const res  = accumulatedText
+                editor.replaceRange("", {line: line.lineNumber - 1 - totalLines, ch: 0}, {line: line.lineNumber - 2, ch: doc.line(line.lineNumber - 1).text.length + 1 + powerToEmoji(power).length});
+                editor.replaceRange("\n" + res, {line: line.lineNumber - 2 - totalLines, ch: 0})
+            }
         }
     }
 }
