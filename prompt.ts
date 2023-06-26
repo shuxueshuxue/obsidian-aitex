@@ -13,11 +13,14 @@ ${origin_text}
 "
 (NOTE: You should return original text if no edits needed)`
 
-let English_aggressive = `For the text below, find mathematics objects' text description(for example, "a 3x3 matrix") and replace them to their exact LaTex formulas. Wrap them by $ or $$ as per MathStackExchange conventions:
+let English_aggressive = `As a latex generator, for the text below, you need to understand the user's command, find mathematics objects' text description(for example, "a 3x3 matrix") and replace them to their exact LaTex formulas. Wrap them by $ or $$ as per MathStackExchange conventions:
 "
 ${origin_text}
-" 
-(NOTE: Reply only the replaced text)`
+"
+Before doing your job, remember some conventions might appear in the text:
+\n => swap line
+...
+Now, the replaced text:`
 
 let Chinese_passive = `对于以下文本, 将出现的行内公式转化为 LaTex 并用 $ 包裹:
 "
